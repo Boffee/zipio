@@ -33,21 +33,29 @@ func ReadFromFile(path string, comp compression) (<-chan []byte, error) {
 		return nil, err
 	}
 
-	var fh *os.File
-	if fh, err = os.Open(path); err != nil {
-		return nil, err
-	}
-
-	reader, deferFunc, err := newFileReader(fh, comp)
-	deferFuncMerged := func() {
+	sender := make(chan []byte)
+	go func() {
+		defer close(sender)
+		fh, err := os.Open(path)
+		if err != nil {
+			log.Panic(err)
+		}
 		defer func() {
 			if err := fh.Close(); err != nil {
 				log.Panic(err)
 			}
 		}()
+		reader, deferFunc, err := newFileReader(fh, comp)
+		if err != nil {
+			log.Panic(err)
+		}
 		defer deferFunc()
-	}
-	sender := readFromReader(reader, deferFuncMerged)
+		scanner := bufio.NewScanner(reader)
+		for scanner.Scan() {
+			sender <- scanner.Bytes()
+		}
+	}()
+
 	return sender, nil
 }
 
