@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/dsnet/compress/bzip2"
+	"github.com/pierrec/lz4"
 	"github.com/ulikunitz/xz"
 )
 
@@ -97,7 +98,7 @@ func newGzWriter(w io.Writer) (io.Writer, func(), error) {
 }
 
 func newLz4Writer(w io.Writer) (io.Writer, func(), error) {
-	lz4w := gzip.NewWriter(w)
+	lz4w := lz4.NewWriter(w)
 	deferFunc := func() {
 		if err := lz4w.Close(); err != nil {
 			log.Panic(err)
