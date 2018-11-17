@@ -47,8 +47,11 @@ func WriteToFile(sender <-chan []byte, path string, comp compression) (err error
 	}
 	defer deferFunc()
 
-	if err = writeToWriter(writer, sender); err != nil {
-		return err
+	for bytes := range sender {
+		_, err = writer.Write(bytes)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -120,15 +123,4 @@ func newRawWriter(w io.Writer) (io.Writer, func(), error) {
 	fw := bufio.NewWriter(w)
 	deferFunc := func() {}
 	return fw, deferFunc, nil
-}
-
-func writeToWriter(
-	w io.Writer, sender <-chan []byte) (err error) {
-	for bytes := range sender {
-		_, err = w.Write(bytes)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
