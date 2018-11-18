@@ -83,7 +83,7 @@ func newBz2Reader(r io.Reader) (io.Reader, func(), error) {
 func newGzReader(r io.Reader) (io.Reader, func(), error) {
 	gzr, err := gzip.NewReader(r)
 	if err != nil {
-		log.Panic(err)
+		return nil, nil, err
 	}
 	deferFunc := func() {
 		if err := gzr.Close(); err != nil {
@@ -101,7 +101,7 @@ func newLz4Reader(r io.Reader) (io.Reader, func(), error) {
 func newXzReader(r io.Reader) (io.Reader, func(), error) {
 	xzr, err := xz.NewReader(r)
 	if err != nil {
-		log.Panic(err)
+		return nil, nil, err
 	}
 	return xzr, func() {}, nil
 }
